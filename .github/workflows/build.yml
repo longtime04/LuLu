@@ -1,0 +1,26 @@
+name: Build LuLu 中文版（未签名）
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build LuLu
+        run: |
+          xcodebuild -project LuLu/LuLu.xcodeproj -scheme LuLu -configuration Release -derivedDataPath build CODE_SIGNING_ALLOWED=NO build
+      - name: Package
+        run: |
+          APP=$(find build/Build/Products/Release -maxdepth 1 -name "LuLu.app" -print -quit)
+          echo "app=$APP"
+          ditto -c -k --sequesterRsrc --keepParent "$APP" LuLu-4.5.7-zh-unsigned.zip
+          ls -la LuLu-4.5.7-zh-unsigned.zip
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: LuLu-zh-unsigned
+          path: LuLu-4.5.7-zh-unsigned.zip
